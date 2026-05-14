@@ -1,5 +1,9 @@
 <?php
-include 'config/database.php';
+// Since this file is included by api/index.php, the path should be relative to api/index.php
+// or we can use a more robust inclusion method
+if (!isset($supabase)) {
+    @include_once __DIR__ . '/../config/database.php';
+}
 
 // Initialize variables
 $data = null;

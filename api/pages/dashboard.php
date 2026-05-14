@@ -1,4 +1,9 @@
 <?php
+// Since this file is included by api/index.php, the path should be relative to api/index.php
+if (!isset($supabase)) {
+    @include_once __DIR__ . '/../config/database.php';
+}
+
 // Initialize variables
 $data = null;
 $total_pasien = 0;
