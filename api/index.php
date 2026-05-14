@@ -111,30 +111,6 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
                 localStorage.setItem('theme', 'dark');
             }
         });
-
-        // Sidebar functionality (existing code)
-        const sidebar = document.getElementById('sidebar');
-        const toggleSidebar = document.getElementById('toggleSidebar');
-        const closeSidebar = document.getElementById('closeSidebar');
-
-        if (toggleSidebar) {
-            toggleSidebar.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-        }
-
-        if (closeSidebar) {
-            closeSidebar.addEventListener('click', () => {
-                sidebar.classList.add('-translate-x-full');
-            });
-        }
-
-        // Close sidebar when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!sidebar.contains(e.target) && !toggleSidebar.contains(e.target)) {
-                sidebar.classList.add('-translate-x-full');
-            }
-        });
     </script>
 
 </body>
