@@ -1,9 +1,11 @@
 <?php
 require_once 'SupabaseClient.php';
 
-// Supabase Configuration
-$supabaseUrl = "https://blmyieexavlvlfsbqqub.supabase.co";
-$supabaseKey = "sb_publishable_iWb3thkPhw0ScFmobcxezQ_NdJZkz3d";
+// Supabase Configuration from Environment Variables
+// On Vercel, these are set in the Project Settings > Environment Variables
+// Locally, they can be set in the system or web server
+$supabaseUrl = getenv('SUPABASE_URL') ?: "https://blmyieexavlvlfsbqqub.supabase.co";
+$supabaseKey = getenv('SUPABASE_KEY') ?: "sb_publishable_iWb3thkPhw0ScFmobcxezQ_NdJZkz3d";
 
 // Initialize Supabase Client
 try {
