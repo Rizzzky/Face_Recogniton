@@ -11,18 +11,16 @@ if ($supabase) {
     // Get total patients
     $result = $supabase->from('penunggu_pasien')->select('*')->get();
     
-    if ($result === false) {
-        $error_message = "Gagal mengambil data dari Supabase.";
+    if (isset($result['error'])) {
+        $error_message = "Gagal mengambil data dari Supabase: " . ($result['message'] ?? 'Unknown error');
     } else {
-        $total_pasien = count($result);
-        $data = $result;
+        $total_pasien = is_array($result) ? count($result) : 0;
+        $data = is_array($result) ? $result : [];
         
         // Get today's count
         $today = date('Y-m-d');
-        // Supabase REST API doesn't support complex DATE() functions easily in select
-        // but we can filter by gte/lte if we wanted. For now, let's keep it simple.
         $today_count = 0;
-        foreach ($result as $row) {
+        foreach ($data as $row) {
             if (isset($row['tgl_input']) && substr($row['tgl_input'], 0, 10) == $today) {
                 $today_count++;
             }
@@ -30,7 +28,7 @@ if ($supabase) {
         
         // Get room count
         $rooms = [];
-        foreach ($result as $row) {
+        foreach ($data as $row) {
             if (!empty($row['nama_ruangan'])) {
                 $rooms[$row['nama_ruangan']] = true;
             }

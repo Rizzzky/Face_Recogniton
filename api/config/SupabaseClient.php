@@ -114,13 +114,11 @@ class SupabaseQueryBuilder {
         if ($this->order) $path .= '&' . $this->order;
         if ($this->limit) $path .= '&' . $this->limit;
 
-        $res = $this->client->executeRaw('GET', $path);
-        return $res['data'];
+        return $this->client->executeRaw('GET', $path);
     }
 
     public function insert($data) {
-        $res = $this->client->executeRaw('POST', $this->table, $data);
-        return $res['data'];
+        return $this->client->executeRaw('POST', $this->table, $data);
     }
 
     public function update($data) {
@@ -128,8 +126,7 @@ class SupabaseQueryBuilder {
         if (!empty($this->filters)) {
             $path .= '?' . implode('&', $this->filters);
         }
-        $res = $this->client->executeRaw('PATCH', $path, $data);
-        return $res['data'];
+        return $this->client->executeRaw('PATCH', $path, $data);
     }
 
     public function delete() {
@@ -137,7 +134,6 @@ class SupabaseQueryBuilder {
         if (!empty($this->filters)) {
             $path .= '?' . implode('&', $this->filters);
         }
-        $res = $this->client->executeRaw('DELETE', $path);
-        return $res['data'];
+        return $this->client->executeRaw('DELETE', $path);
     }
 }

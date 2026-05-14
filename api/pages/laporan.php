@@ -10,11 +10,12 @@ if ($supabase) {
     // (PostgREST doesn't support GROUP BY directly in basic mode)
     $result = $supabase->from('riwayat_scan')->select('*')->get();
     
-    if ($result === false) {
-        $error_message = "Gagal mengambil data dari Supabase.";
+    if (isset($result['error'])) {
+        $error_message = "Gagal mengambil data dari Supabase: " . ($result['message'] ?? 'Unknown error');
     } else {
         $aggregated = [];
-        foreach ($result as $row) {
+        $resultData = is_array($result) ? $result : [];
+        foreach ($resultData as $row) {
             $key = $row['nama_penunggu'] . '|' . $row['nama_pasien'] . '|' . $row['ruangan'];
             if (!isset($aggregated[$key])) {
                 $aggregated[$key] = [
