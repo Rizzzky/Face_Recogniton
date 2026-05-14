@@ -13,45 +13,23 @@ $response = [];
 $error = null;
 
 // Check connection
-if (!$conn) {
-    $error = "Koneksi database gagal: " . mysqli_connect_error();
-    echo json_encode([
-        'error' => $error,
-        'data' => [],
-        'total' => 0
-    ]);
+if (!isset($supabase)) {
+    echo json_encode(['error' => 'Supabase client not initialized', 'data' => []]);
     exit;
 }
 
-// Verify table exists
-$tableCheck = mysqli_query($conn, "SHOW TABLES LIKE 'penunggu_pasien'");
-if (!$tableCheck || mysqli_num_rows($tableCheck) == 0) {
-    $error = "Tabel 'penunggu_pasien' tidak ditemukan di database";
-    echo json_encode([
-        'error' => $error,
-        'data' => [],
-        'total' => 0
-    ]);
-    exit;
-}
+// Query data
+$result = $supabase->from('penunggu_pasien')->select('*')->get();
 
-// Query data - select all records (status column might not exist in some setups)
-$query = mysqli_query($conn, "SELECT * FROM penunggu_pasien");
-
-if (!$query) {
-    $error = "Query error: " . mysqli_error($conn);
-    echo json_encode([
-        'error' => $error,
-        'data' => [],
-        'total' => 0
-    ]);
+if ($result === false) {
+    echo json_encode(['error' => 'Gagal mengambil data dari Supabase', 'data' => []]);
     exit;
 }
 
 $data = [];
 $totalRows = 0;
 
-while ($d = mysqli_fetch_assoc($query)) {
+foreach ($result as $d) {
     // Validate required fields
     if (empty($d['nama_penunggu']) || empty($d['foto'])) {
         continue; // Skip rows with missing critical data
@@ -96,6 +74,5 @@ echo json_encode([
     'message' => $totalRows > 0 ? "Data berhasil diambil" : "Tidak ada data penunggu yang aktif"
 ]);
 
-mysqli_close($conn);
 exit;
 ?>

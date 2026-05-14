@@ -7,28 +7,45 @@ $error_message = null;
 $total_records = 0;
 
 // Check connection
-if (!$conn) {
-    $error_message = "Koneksi database gagal. Silakan hubungi administrator.";
+if (!isset($supabase)) {
+    $error_message = "Konfigurasi Supabase tidak ditemukan.";
 } else {
-    $query = "
-        SELECT 
-            nama_penunggu,
-            nama_pasien,
-            ruangan,
-            SUM(CASE WHEN status='MASUK' THEN 1 ELSE 0 END) AS total_masuk,
-            SUM(CASE WHEN status='KELUAR' THEN 1 ELSE 0 END) AS total_keluar,
-            MAX(waktu_scan) AS terakhir
-        FROM riwayat_scan
-        GROUP BY nama_penunggu, nama_pasien, ruangan
-        ORDER BY MAX(waktu_scan) DESC
-    ";
+    // Fetch all scan history and aggregate manually in PHP
+    // (PostgREST doesn't support GROUP BY directly in basic mode)
+    $result = $supabase->from('riwayat_scan')->select('*')->get();
     
-    $data = mysqli_query($conn, $query);
-    
-    if (!$data) {
-        $error_message = "Query Error: " . mysqli_error($conn);
+    if ($result === false) {
+        $error_message = "Gagal mengambil data dari Supabase.";
     } else {
-        $total_records = mysqli_num_rows($data);
+        $aggregated = [];
+        foreach ($result as $row) {
+            $key = $row['nama_penunggu'] . '|' . $row['nama_pasien'] . '|' . $row['ruangan'];
+            if (!isset($aggregated[$key])) {
+                $aggregated[$key] = [
+                    'nama_penunggu' => $row['nama_penunggu'],
+                    'nama_pasien' => $row['nama_pasien'],
+                    'ruangan' => $row['ruangan'],
+                    'total_masuk' => 0,
+                    'total_keluar' => 0,
+                    'terakhir' => $row['waktu_scan']
+                ];
+            }
+            
+            if ($row['status'] == 'MASUK') $aggregated[$key]['total_masuk']++;
+            if ($row['status'] == 'KELUAR') $aggregated[$key]['total_keluar']++;
+            
+            if (strtotime($row['waktu_scan']) > strtotime($aggregated[$key]['terakhir'])) {
+                $aggregated[$key]['terakhir'] = $row['waktu_scan'];
+            }
+        }
+        
+        // Sort by 'terakhir' DESC
+        usort($aggregated, function($a, $b) {
+            return strtotime($b['terakhir']) - strtotime($a['terakhir']);
+        });
+        
+        $data = $aggregated;
+        $total_records = count($data);
     }
 }
 ?>
@@ -103,65 +120,48 @@ if (!$conn) {
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                 <?php 
-                if ($data && $total_records > 0):
+                if ($data && count($data) > 0):
                     $no = 1; 
-                    while($d = mysqli_fetch_assoc($data)): 
+                    foreach ($data as $d): 
                 ?>
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        <?php echo $no++; ?>
-                    </td>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 font-medium"><?php echo $no++; ?></td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3">
-                                <?php echo substr($d['nama_penunggu'], 0, 1); ?>
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs mr-3">
+                                <?php echo strtoupper(substr($d['nama_penunggu'], 0, 1)); ?>
                             </div>
-                            <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                <?php echo htmlspecialchars($d['nama_penunggu']); ?>
-                            </div>
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white"><?php echo htmlspecialchars($d['nama_penunggu']); ?></span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        <?php echo htmlspecialchars($d['nama_pasien']); ?>
-                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300"><?php echo htmlspecialchars($d['nama_pasien']); ?></td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                             <?php echo htmlspecialchars($d['ruangan']); ?>
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        <span class="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 font-semibold text-sm">
-                            <?php echo $d['total_masuk'] ?: 0; ?>
-                        </span>
+                        <span class="text-sm font-bold text-green-600 dark:text-green-400"><?php echo $d['total_masuk']; ?></span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        <span class="inline-flex items-center justify-center px-3 py-1 rounded-lg bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 font-semibold text-sm">
-                            <?php echo $d['total_keluar'] ?: 0; ?>
-                        </span>
+                        <span class="text-sm font-bold text-red-600 dark:text-red-400"><?php echo $d['total_keluar']; ?></span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        <?php 
-                        if ($d['terakhir']) {
-                            echo date('d/m/Y H:i', strtotime($d['terakhir']));
-                        } else {
-                            echo '-';
-                        }
-                        ?>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <?php echo date('d/m/Y H:i', strtotime($d['terakhir'])); ?>
                     </td>
                 </tr>
-                <?php 
-                    endwhile;
-                else:
-                ?>
+                <?php endforeach; ?>
+                <?php else: ?>
                 <tr>
                     <td colspan="7" class="px-6 py-12 text-center">
-                        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-4">
+                                <svg class="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-500 dark:text-gray-400 font-medium">Belum ada riwayat scan.</p>
                         </div>
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Belum ada data</h3>
-                        <p class="text-gray-500 dark:text-gray-400">Riwayat scan akan ditampilkan di sini setelah ada aktivitas pengenalan wajah.</p>
                     </td>
                 </tr>
                 <?php endif; ?>

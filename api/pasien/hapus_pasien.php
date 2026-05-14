@@ -2,24 +2,26 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$id = isset($_GET['id']) ? $_GET['id'] : null;
 
-if ($id <= 0) {
+if (!$id || !isset($supabase)) {
     header('Location: ../index.php?page=dashboard');
     exit;
 }
 
-$query = mysqli_query($conn, "SELECT foto FROM penunggu_pasien WHERE id='$id'");
-$data = mysqli_fetch_assoc($query);
+// Get photo path before deleting
+$result = $supabase->from('penunggu_pasien')->eq('id_penunggu', $id)->get();
+$data = (is_array($result) && count($result) > 0) ? $result[0] : null;
 
 if ($data && !empty($data['foto'])) {
-    $fotoPath = __DIR__ . '/../' . $data['foto'];
+    $fotoPath = __DIR__ . '/../../' . $data['foto'];
     if (file_exists($fotoPath) && is_file($fotoPath)) {
-        unlink($fotoPath);
+        @unlink($fotoPath);
     }
 }
 
-mysqli_query($conn, "DELETE FROM penunggu_pasien WHERE id='$id'");
+// Delete from Supabase
+$supabase->from('penunggu_pasien')->eq('id_penunggu', $id)->delete();
 
 header('Location: ../index.php?page=dashboard');
 exit;

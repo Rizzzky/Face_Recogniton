@@ -1,16 +1,25 @@
 <?php
-$host = "localhost";
-$user = "root";
-$pass = ""; // default XAMPP kosong
-$db   = "db_penunggu_rs";
+require_once 'SupabaseClient.php';
 
-// Suppress mysqli exceptions temporarily
-mysqli_report(MYSQLI_REPORT_OFF);
+// Supabase Configuration
+$supabaseUrl = "https://blmyieexavlvlfsbqqub.supabase.co";
+$supabaseKey = "sb_publishable_iWb3thkPhw0ScFmobcxezQ_NdJZkz3d";
 
-$conn = @mysqli_connect($host, $user, $pass, $db);
-
-if (!$conn) {
-    // Set connection error but don't die
-    // This allows pages to handle errors gracefully
+// Initialize Supabase Client
+try {
+    $supabase = new SupabaseClient($supabaseUrl, $supabaseKey);
+    $conn = $supabase; // Alias for backward compatibility
+} catch (Exception $e) {
+    error_log("Supabase Connection Error: " . $e->getMessage());
+    $supabase = null;
     $conn = null;
 }
+
+/**
+ * Global helper to access Supabase
+ */
+function getSupabase() {
+    global $supabase;
+    return $supabase;
+}
+?>

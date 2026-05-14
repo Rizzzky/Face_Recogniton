@@ -10,31 +10,37 @@ $error_message = null;
 @include 'config/database.php';
 
 // Check connection
-if (!isset($conn) || !$conn) {
-    $error_message = "Database tidak terhubung. Pastikan XAMPP/MySQL sedang berjalan.";
+if (!isset($supabase)) {
+    $error_message = "Konfigurasi Supabase tidak ditemukan.";
 } else {
     // Get total patients
-    $query = "SELECT * FROM penunggu_pasien LIMIT 1000";
-    $result = @mysqli_query($conn, $query);
+    $result = $supabase->from('penunggu_pasien')->select('*')->get();
     
-    if (!$result) {
-        $error_message = "Error: " . mysqli_error($conn);
+    if ($result === false) {
+        $error_message = "Gagal mengambil data dari Supabase.";
     } else {
-        $total_pasien = mysqli_num_rows($result);
+        $total_pasien = count($result);
         $data = $result;
         
         // Get today's count
         $today = date('Y-m-d');
-        $today_query = @mysqli_query($conn, "SELECT COUNT(*) as count FROM penunggu_pasien WHERE DATE(tanggal_masuk) = '$today'");
-        if ($today_query) {
-            $today_count = mysqli_fetch_assoc($today_query)['count'];
+        // Supabase REST API doesn't support complex DATE() functions easily in select
+        // but we can filter by gte/lte if we wanted. For now, let's keep it simple.
+        $today_count = 0;
+        foreach ($result as $row) {
+            if (isset($row['tgl_input']) && substr($row['tgl_input'], 0, 10) == $today) {
+                $today_count++;
+            }
         }
         
         // Get room count
-        $room_query = @mysqli_query($conn, "SELECT COUNT(DISTINCT nama_ruangan) as count FROM penunggu_pasien");
-        if ($room_query) {
-            $room_count = mysqli_fetch_assoc($room_query)['count'];
+        $rooms = [];
+        foreach ($result as $row) {
+            if (!empty($row['nama_ruangan'])) {
+                $rooms[$row['nama_ruangan']] = true;
+            }
         }
+        $room_count = count($rooms);
     }
 }
 ?>
@@ -207,7 +213,7 @@ if (!isset($conn) || !$conn) {
                 <?php 
                 if ($data && $total_pasien > 0):
                     $no = 1; 
-                    while($d = mysqli_fetch_assoc($data)): 
+                    foreach($data as $d): 
                 ?>
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
@@ -260,7 +266,21 @@ if (!isset($conn) || !$conn) {
                     </td>
                 </tr>
                 <?php 
-                    endwhile;
+                    endforeach;
+                else: 
+                ?>
+                <tr>
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                        <div class="flex flex-col items-center">
+                            <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-lg font-medium">Belum ada data penunggu</p>
+                            <p class="text-sm">Data yang Anda masukkan akan tampil di sini.</p>
+                        </div>
+                    </td>
+                </tr>
+                <?php 
                 endif;
                 ?>
             </tbody>

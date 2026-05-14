@@ -7,10 +7,10 @@ ini_set('display_errors', 0);
 include '../config/database.php';
 
 // Check database connection
-if (!$conn) {
+if (!isset($supabase)) {
     die(json_encode([
         'success' => false,
-        'message' => 'Database connection failed: ' . mysqli_connect_error()
+        'message' => 'Supabase connection failed'
     ]));
 }
 
@@ -77,58 +77,29 @@ if (!file_put_contents($path, $data_foto)) {
 // Path for database (relative)
 $path_db = 'uploads/faces/' . $nama_file;
 
-// Get table structure first
-$describe = mysqli_query($conn, "DESCRIBE penunggu_pasien");
-$columns = [];
-while ($col = mysqli_fetch_assoc($describe)) {
-    $columns[] = $col['Field'];
-}
+// Data to insert
+$insertData = [
+    'nama_penunggu' => $nama_penunggu,
+    'nama_pasien' => $nama_pasien,
+    'nama_ruangan' => $nama_ruangan,
+    'foto' => $path_db,
+    'status' => 'aktif'
+];
 
-// Build query with available columns
-$fields = ['nama_penunggu', 'nama_pasien', 'nama_ruangan', 'foto'];
-$values = ["'$nama_penunggu'", "'$nama_pasien'", "'$nama_ruangan'", "'$path_db'"];
+// Execute insert
+$result = $supabase->from('penunggu_pasien')->insert($insertData);
 
-// Add optional fields if they exist in table
-if (in_array('tgl_input', $columns)) {
-    $fields[] = 'tgl_input';
-    $values[] = "NOW()";
-}
-if (in_array('status', $columns)) {
-    $fields[] = 'status';
-    $values[] = "'aktif'";
-}
-if (in_array('tanggal_masuk', $columns)) {
-    $fields[] = 'tanggal_masuk';
-    $values[] = "'$tanggal_masuk'";
-}
-if (in_array('no_rm', $columns)) {
-    $fields[] = 'no_rm';
-    $values[] = "'$no_rm'";
-}
-
-// Build final query
-$fields_str = implode(', ', $fields);
-$values_str = implode(', ', $values);
-$query = "INSERT INTO penunggu_pasien ($fields_str) VALUES ($values_str)";
-
-// Execute query
-if (!mysqli_query($conn, $query)) {
-    // Delete the uploaded file if insert fails
-    @unlink($path);
-    die(json_encode([
+if ($result) {
+    echo json_encode([
+        'success' => true,
+        'message' => 'Data berhasil disimpan',
+        'file' => $path_db
+    ]);
+} else {
+    echo json_encode([
         'success' => false,
-        'message' => 'Gagal menyimpan ke database: ' . mysqli_error($conn)
-    ]));
+        'message' => 'Gagal menyimpan ke Supabase'
+    ]);
 }
-
-// Close connection
-mysqli_close($conn);
-
-// Return success
-echo json_encode([
-    'success' => true,
-    'message' => 'Data berhasil disimpan',
-    'redirect' => '/face-recognitions-rs/index.php?page=dashboard'
-]);
 exit;
 ?>
