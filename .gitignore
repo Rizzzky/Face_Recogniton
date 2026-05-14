@@ -1,0 +1,17 @@
+# PHP
+composer.lock
+vendor/
+
+# Environment
+.env
+
+# Vercel
+.vercel
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project specific
+uploads/faces/*
+!uploads/faces/.gitkeep
