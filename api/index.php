@@ -47,26 +47,26 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 </head>
 <body class="h-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
 
-    <?php include '../layout/sidebar.php'; ?>
+    <?php include 'layout/sidebar.php'; ?>
 
     <div class="ml-0 lg:ml-72 p-4 lg:p-8 min-h-screen">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 lg:p-8 animate-fade-in">
             <?php
             switch ($page) {
                 case 'dashboard':
-                    include '../pages/dashboard.php';
+                    include 'pages/dashboard.php';
                     break;
 
                 case 'input':
-                    include './pasien/input_penunggu.php';
+                    include 'pasien/input_penunggu.php';
                     break;
 
                 case 'recognition':
-                    include '../pages/pengenalan_wajah.php';
+                    include 'pages/pengenalan_wajah.php';
                     break;
 
                 case 'laporan':
-                    include '../pages/laporan.php';
+                    include 'pages/laporan.php';
                     break;
 
                 default:

@@ -1,7 +1,7 @@
 <?php
 // pasien/simpan_riwayat.php
 
-include '../../config/database.php';
+include '../config/database.php';
 
 $nama_penunggu = $_POST['nama_penunggu'];
 $nama_pasien   = $_POST['nama_pasien'];

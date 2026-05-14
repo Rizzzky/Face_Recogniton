@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-include '../../config/database.php';
+include '../config/database.php';
 
 // Set response header
 header('Content-Type: application/json');

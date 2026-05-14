@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 // Correct path to database config
-include '../../config/database.php';
+include '../config/database.php';
 
 // Check database connection
 if (!$conn) {
