@@ -23,6 +23,10 @@ class SupabaseClient {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge($defaultHeaders, $headers));
+        
+        // Timeout and SSL options
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Bypass SSL issues in some PHP environments
 
         if ($data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -30,12 +34,29 @@ class SupabaseClient {
 
         $response = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
         curl_close($ch);
 
-        return [
-            'status' => $status,
-            'data' => json_decode($response, true)
-        ];
+        if ($curlError) {
+            return [
+                'error' => true,
+                'message' => 'CURL Error: ' . $curlError
+            ];
+        }
+
+        $decoded = json_decode($response, true);
+        
+        // Handle Supabase errors
+        if ($status >= 400) {
+            return [
+                'error' => true,
+                'status' => $status,
+                'message' => $decoded['message'] ?? 'Unknown Supabase error',
+                'hint' => $decoded['hint'] ?? ''
+            ];
+        }
+
+        return $decoded;
     }
 
     public function from($table) {
