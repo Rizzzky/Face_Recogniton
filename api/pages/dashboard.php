@@ -1,23 +1,13 @@
 <?php
-// Since this file is included by api/index.php, the path should be relative to api/index.php
-if (!isset($supabase)) {
-    @include_once __DIR__ . '/../config/database.php';
-}
-
 // Initialize variables
 $data = null;
 $total_pasien = 0;
 $today_count = 0;
 $room_count = 0;
-$error_message = null;
-
-// Connect to database
-@include 'config/database.php';
+$error_message = $db_error; // Use global error from index.php
 
 // Check connection
-if (!isset($supabase)) {
-    $error_message = "Konfigurasi Supabase tidak ditemukan.";
-} else {
+if ($supabase) {
     // Get total patients
     $result = $supabase->from('penunggu_pasien')->select('*')->get();
     

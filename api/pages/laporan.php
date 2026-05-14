@@ -1,19 +1,11 @@
 <?php
-// Since this file is included by api/index.php, the path should be relative to api/index.php
-// or we can use a more robust inclusion method
-if (!isset($supabase)) {
-    @include_once __DIR__ . '/../config/database.php';
-}
-
 // Initialize variables
 $data = null;
-$error_message = null;
+$error_message = $db_error; // Use global error from index.php
 $total_records = 0;
 
 // Check connection
-if (!isset($supabase)) {
-    $error_message = "Konfigurasi Supabase tidak ditemukan.";
-} else {
+if ($supabase) {
     // Fetch all scan history and aggregate manually in PHP
     // (PostgREST doesn't support GROUP BY directly in basic mode)
     $result = $supabase->from('riwayat_scan')->select('*')->get();

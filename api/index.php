@@ -1,4 +1,7 @@
 <?php
+// Global database configuration
+require_once __DIR__ . '/config/database.php';
+
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 ?>
 
