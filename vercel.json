@@ -1,12 +1,6 @@
 {
   "functions": {
-    "api/*.php": {
-      "runtime": "vercel-php@0.7.1"
-    },
-    "pasien/*.php": {
-      "runtime": "vercel-php@0.7.1"
-    },
-    "*.php": {
+    "api/**/*.php": {
       "runtime": "vercel-php@0.7.1"
     }
   },
@@ -20,8 +14,16 @@
       "dest": "/uploads/$1"
     },
     {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/pasien/(.*)",
+      "dest": "/api/pasien/$1"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/index.php"
+      "dest": "/api/index.php"
     }
   ]
 }

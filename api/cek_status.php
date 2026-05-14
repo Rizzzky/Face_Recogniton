@@ -1,6 +1,6 @@
 <?php
 
-include '/config/database.php';
+include '../config/database.php';
 
 $nama_penunggu = $_POST['nama_penunggu'];
 
