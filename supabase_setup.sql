@@ -5,11 +5,13 @@
 -- Buat Tabel penunggu_pasien
 CREATE TABLE IF NOT EXISTS penunggu_pasien (
   id_penunggu SERIAL PRIMARY KEY,
+  no_rm VARCHAR(50),
   nama_penunggu VARCHAR(100) NOT NULL,
   nama_pasien VARCHAR(100) NOT NULL,
   nama_ruangan VARCHAR(50) NOT NULL,
   foto VARCHAR(255) NOT NULL,
-  status VARCHAR(20) DEFAULT 'aktif', -- ENUM ganti VARCHAR untuk kemudahan
+  status VARCHAR(20) DEFAULT 'aktif',
+  tanggal_masuk DATE DEFAULT CURRENT_DATE,
   tgl_input TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   tgl_update TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -51,9 +53,9 @@ CREATE TRIGGER update_penunggu_modtime
 -- =============================================
 
 INSERT INTO penunggu_pasien 
-(nama_penunggu, nama_pasien, nama_ruangan, foto, status) 
+(no_rm, nama_penunggu, nama_pasien, nama_ruangan, foto, status, tanggal_masuk) 
 VALUES 
-('Budi Santoso', 'Siti Aminah', 'Ruang 101', 'uploads/faces/budi.jpg', 'aktif'),
-('Ahmad Wijaya', 'Hartono Sumirat', 'Ruang 102', 'uploads/faces/ahmad.jpg', 'aktif'),
-('Siti Nurhaliza', 'Rina Suryanto', 'Ruang 103', 'uploads/faces/siti.jpg', 'aktif'),
-('Rudi Hermawan', 'Bambang Irawan', 'Ruang 104', 'uploads/faces/rudi.jpg', 'aktif');
+('RM-001', 'Budi Santoso', 'Siti Aminah', 'Ruang 101', 'uploads/faces/budi.jpg', 'aktif', CURRENT_DATE),
+('RM-002', 'Ahmad Wijaya', 'Hartono Sumirat', 'Ruang 102', 'uploads/faces/ahmad.jpg', 'aktif', CURRENT_DATE),
+('RM-003', 'Siti Nurhaliza', 'Rina Suryanto', 'Ruang 103', 'uploads/faces/siti.jpg', 'aktif', CURRENT_DATE),
+('RM-004', 'Rudi Hermawan', 'Bambang Irawan', 'Ruang 104', 'uploads/faces/rudi.jpg', 'aktif', CURRENT_DATE);

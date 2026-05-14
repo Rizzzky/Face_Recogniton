@@ -217,30 +217,30 @@ if ($supabase) {
                         <?php echo $no++; ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        <?php echo htmlspecialchars($d['no_rm']); ?>
+                        <?php echo htmlspecialchars($d['no_rm'] ?? '-'); ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-3">
-                                <?php echo substr($d['nama_pasien'], 0, 1); ?>
+                                <?php echo substr($d['nama_pasien'] ?? 'P', 0, 1); ?>
                             </div>
                             <div>
                                 <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                    <?php echo htmlspecialchars($d['nama_pasien']); ?>
+                                    <?php echo htmlspecialchars($d['nama_pasien'] ?? 'N/A'); ?>
                                 </div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        <?php echo htmlspecialchars($d['nama_penunggu']); ?>
+                        <?php echo htmlspecialchars($d['nama_penunggu'] ?? 'N/A'); ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                            <?php echo htmlspecialchars($d['nama_ruangan']); ?>
+                            <?php echo htmlspecialchars($d['nama_ruangan'] ?? 'N/A'); ?>
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        <?php echo date('d/m/Y', strtotime($d['tanggal_masuk'])); ?>
+                        <?php echo isset($d['tanggal_masuk']) ? date('d/m/Y', strtotime($d['tanggal_masuk'])) : '-'; ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-2">
@@ -251,7 +251,7 @@ if ($supabase) {
                                 </svg>
                                 Lihat
                             </button>
-                            <a href="pasien/hapus_pasien.php?id=<?php echo htmlspecialchars($d['id']); ?>"
+                            <a href="pasien/hapus_pasien.php?id=<?php echo htmlspecialchars($d['id_penunggu'] ?? ($d['id'] ?? '')); ?>"
                                class="inline-flex items-center px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors duration-200 text-xs font-medium"
                                onclick="return confirm('Apakah pasien sudah pulang?')">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
